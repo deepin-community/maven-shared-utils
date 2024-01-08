@@ -39,7 +39,9 @@ import javax.annotation.Nonnull;
  * @author Magesh Umasankar
  * @author <a href="mailto:bruce@callenish.com">Bruce Atherton</a>
  * 
+ * @deprecated use {@code java.nio.file.Files.walkFileTree()} and related classes
  */
+@Deprecated
 public final class SelectorUtils
 {
 
@@ -71,12 +73,12 @@ public final class SelectorUtils
     }
 
     /**
-     * Tests whether or not a given path matches the start of a given
-     * pattern up to the first "**".
-     * <p/>
+     * <p>Tests whether or not a given path matches the start of a given
+     * pattern up to the first "**".</p>
+     * <p>
      * This is not a general purpose test and should only be used if you
      * can live with false positives. For example, <code>pattern=**\a</code>
-     * and <code>str=b</code> will yield <code>true</code>.
+     * and <code>str=b</code> will yield <code>true</code>.</p>
      *
      * @param pattern The pattern to match against. Must not be
      *                <code>null</code>.
@@ -91,12 +93,11 @@ public final class SelectorUtils
     }
 
     /**
-     * Tests whether or not a given path matches the start of a given
-     * pattern up to the first "**".
-     * <p/>
-     * This is not a general purpose test and should only be used if you
+     * <p>Tests whether or not a given path matches the start of a given
+     * pattern up to the first "**".</p>
+     * <p>This is not a general purpose test and should only be used if you
      * can live with false positives. For example, <code>pattern=**\a</code>
-     * and <code>str=b</code> will yield <code>true</code>.
+     * and <code>str=b</code> will yield <code>true</code>.</p>
      *
      * @param pattern         The pattern to match against. Must not be
      *                        <code>null</code>.

@@ -34,19 +34,17 @@ import org.apache.maven.shared.utils.Os;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.shell.BourneShell;
 import org.apache.maven.shared.utils.cli.shell.CmdShell;
-import org.apache.maven.shared.utils.cli.shell.CommandShell;
 import org.apache.maven.shared.utils.cli.shell.Shell;
 
 /**
- * <p/>
+ * <p>
  * Commandline objects help handling command lines specifying processes to
  * execute.
  * </p>
- * <p/>
+ * <p>
  * The class can be used to define a command line as nested elements or as a
  * helper to define a command line by an application.
  * </p>
- * <p/>
  * <code>
  * &lt;someelement&gt;<br>
  * &nbsp;&nbsp;&lt;acommandline executable="/executable/to/run"&gt;<br>
@@ -56,8 +54,7 @@ import org.apache.maven.shared.utils.cli.shell.Shell;
  * &nbsp;&nbsp;&lt;/acommandline&gt;<br>
  * &lt;/someelement&gt;<br>
  * </code>
- * </p>
- * <p/>
+ * <p>
  * The element <code>someelement</code> must provide a method
  * <code>createAcommandline</code> which returns an instance of this class.
  * </p>
@@ -70,16 +67,15 @@ public class Commandline
 {
     private final List<Arg> arguments = new Vector<Arg>();
 
-    //protected Vector envVars = new Vector();
-    // synchronized added to preserve synchronize of Vector class
     private final Map<String, String> envVars = Collections.synchronizedMap( new LinkedHashMap<String, String>() );
 
     private Shell shell;
 
     /**
      * Create a new command line object.
-     * Shell is autodetected from operating system
-     * @param shell The shell instance.
+     * Shell is autodetected from operating system.
+     * 
+     * @param shell the shell instance
      */
     public Commandline( Shell shell )
     {
@@ -88,23 +84,16 @@ public class Commandline
 
     /**
      * Create a new command line object.
-     * Shell is autodetected from operating system
+     * Shell is autodetected from operating system.
      *
-     * @param toProcess The command to process
+     * @param toProcess the command to process
+     * @throws CommandLineException in case of unbalanced quotes.
      */
-    public Commandline( String toProcess )
+    public Commandline( String toProcess ) throws CommandLineException
     {
         setDefaultShell();
-        String[] tmp = new String[0];
-        try
-        {
-            tmp = CommandLineUtils.translateCommandline( toProcess );
-        }
-        catch ( Exception e )
-        {
-            System.err.println( "Error translating Commandline." );
-        }
-        if ( ( tmp != null ) && ( tmp.length > 0 ) )
+        String[] tmp = CommandLineUtils.translateCommandline( toProcess );
+        if ( ( tmp.length > 0 ) )
         {
             setExecutable( tmp[0] );
             for ( int i = 1; i < tmp.length; i++ )
@@ -116,7 +105,7 @@ public class Commandline
 
     /**
      * Create a new command line object.
-     * Shell is autodetected from operating system
+     * Shell is autodetected from operating system.
      */
     public Commandline()
     {
@@ -124,7 +113,7 @@ public class Commandline
     }
 
     /**
-     * <p>Sets the shell or command-line interpretor for the detected operating system,
+     * <p>Sets the shell or command-line interpreter for the detected operating system,
      * and the shell arguments.</p>
      */
     private void setDefaultShell()
@@ -132,14 +121,7 @@ public class Commandline
         //If this is windows set the shell to command.com or cmd.exe with correct arguments.
         if ( Os.isFamily( Os.FAMILY_WINDOWS ) )
         {
-            if ( Os.isFamily( Os.FAMILY_WIN9X ) )
-            {
-                setShell( new CommandShell() );
-            }
-            else
-            {
-                setShell( new CmdShell() );
-            }
+            setShell( new CmdShell() );
         }
         else
         {
@@ -148,13 +130,9 @@ public class Commandline
     }
 
     /**
-     * Creates an argument object.
-     * <p/>
-     * <p>Each commandline object has at most one instance of the
-     * argument class.  This method calls
-     * <code>this.createArgument(false)</code>.</p>
+     * Creates an empty argument object and inserts it at the end of the argument list.
      *
-     * @return the argument object.
+     * @return the argument object
      */
     public Arg createArg()
     {
@@ -162,14 +140,11 @@ public class Commandline
     }
 
     /**
-     * Creates an argument object and adds it to our list of args.
-     * <p/>
-     * <p>Each commandline object has at most one instance of the
-     * argument class.</p>
+     * Creates an argument object and adds it to the list of args.
      *
      * @param insertAtStart if true, the argument is inserted at the
-     *                      beginning of the list of args, otherwise it is appended.
-     * @return The arguments.
+     *                      beginning of the list of args. Otherwise it is appended.
+     * @return the argument
      */
     public Arg createArg( boolean insertAtStart )
     {
@@ -187,7 +162,8 @@ public class Commandline
 
     /**
      * Sets the executable to run.
-     * @param executable The executable.
+     * 
+     * @param executable the executable
      */
     public void setExecutable( String executable )
     {
@@ -195,7 +171,7 @@ public class Commandline
     }
 
     /**
-     * @return The executable.
+     * @return the executable
      */
     public String getExecutable()
     {
@@ -204,7 +180,7 @@ public class Commandline
     }
 
     /**
-     * @param line The arguments.
+     * @param line the arguments
      */
     public void addArguments( String... line )
     {
@@ -215,9 +191,10 @@ public class Commandline
     }
 
     /**
-     * Add an environment variable
-     * @param name The name of the environment variable.
-     * @param value The appropriate value.
+     * Add an environment variable.
+     * 
+     * @param name the name of the environment variable
+     * @param value the appropriate value
      */
     public void addEnvironment( String name, String value )
     {
@@ -226,7 +203,7 @@ public class Commandline
     }
 
     /**
-     * Add system environment variables
+     * Add system environment variables.
      */
     public void addSystemEnvironment()
     {
@@ -243,26 +220,29 @@ public class Commandline
     }
 
     /**
-     * Return the list of environment variables
-     * @return an array of all environment variables.
+     * Return the list of environment variables.
+     * 
+     * @return an array of all environment variables
      */
     public String[] getEnvironmentVariables()
     {
         addSystemEnvironment();
-        String[] environmentVars = new String[envVars.size()];
-        int i = 0;
+        List<String> environmentVars = new ArrayList<>();
         for ( String name : envVars.keySet() )
         {
             String value = envVars.get( name );
-            environmentVars[i] = name + "=" + value;
-            i++;
+            if ( value != null )
+            {
+                environmentVars.add( name + "=" + value );
+            }
         }
-        return environmentVars;
+        return environmentVars.toArray( new String[0] );
     }
 
     /**
      * Returns the executable and all defined arguments.
-     * @return an array of all arguments incl. executable.
+     * 
+     * @return an array of all arguments including the executable
      */
     public String[] getCommandline()
     {
@@ -280,7 +260,7 @@ public class Commandline
     }
 
     /**
-     * @return the shell, executable and all defined arguments without masking any arguments.
+     * @return the shell, executable and all defined arguments without masking any arguments
      */
     private String[] getShellCommandline()
     {
@@ -288,7 +268,7 @@ public class Commandline
     }
 
     /**
-     * @param mask flag to mask any arguments (having his {@code mask} field to {@code true}).
+     * @param mask flag to mask any arguments (having his {@code mask} field to {@code true})
      * @return the shell, executable and all defined arguments with masking some arguments if
      * {@code mask} parameter is on
      */
@@ -310,10 +290,10 @@ public class Commandline
 
     /**
      * Returns all arguments defined by <code>addLine</code>,
-     * <code>addValue</code> or the argument object.
+     * <code>addValue</code>, or the argument object.
      *
-     * @param mask flag to mask any arguments (having his {@code mask} field to {@code true}).
-     * @return an array of arguments.
+     * @param mask flag to mask any arguments (having his {@code mask} field to {@code true})
+     * @return an array of arguments
      */
     public String[] getArguments( boolean mask )
     {
@@ -363,7 +343,8 @@ public class Commandline
 
     /**
      * Sets working directory.
-     * @param path The to be set as working directory.
+     * 
+     * @param path the working directory
      */
     public void setWorkingDirectory( String path )
     {
@@ -371,8 +352,9 @@ public class Commandline
     }
 
     /**
-     * Sets execution directory.
-     * @param workingDirectory The working directory.
+     * Sets working directory.
+     * 
+     * @param workingDirectory the working directory
      */
     public void setWorkingDirectory( File workingDirectory )
     {
@@ -380,7 +362,7 @@ public class Commandline
     }
 
     /**
-     * @return The working directory.
+     * @return the working directory
      */
     public File getWorkingDirectory()
     {
@@ -396,16 +378,15 @@ public class Commandline
     }
 
     /**
-     * Executes the command.
-     * @return The process.
-     * @throws CommandLineException in case of errors.
+     * Execute the command.
+     * 
+     * @return the process
+     * @throws CommandLineException in case of errors
      */
     public Process execute()
         throws CommandLineException
     {
         Process process;
-
-        //addEnvironment( "MAVEN_TEST_ENVAR", "MAVEN_TEST_ENVAR_VALUE" );
 
         String[] environment = getEnvironmentVariables();
 
@@ -442,7 +423,7 @@ public class Commandline
     }
 
     /**
-     * Allows to set the shell to be used in this command line.
+     * Set the shell to be used for this command line.
      *
      * @param shell the shell
      */
@@ -453,7 +434,8 @@ public class Commandline
 
     /**
      * Get the shell to be used in this command line.
-     * @return the shell.
+     * 
+     * @return the shell
      */
     public Shell getShell()
     {
@@ -461,7 +443,7 @@ public class Commandline
     }
 
     /**
-     * 
+     * A single command line argument
      */
     public static class Argument
         implements Arg
@@ -484,20 +466,13 @@ public class Commandline
         /**
          * {@inheritDoc}
          */
-        public void setLine( String line )
+        public void setLine( String line ) throws CommandLineException
         {
             if ( line == null )
             {
                 return;
             }
-            try
-            {
-                parts = CommandLineUtils.translateCommandline( line );
-            }
-            catch ( Exception e )
-            {
-                System.err.println( "Error translating Commandline." );
-            }
+            parts = CommandLineUtils.translateCommandline( line );
         }
 
         /**
@@ -517,7 +492,7 @@ public class Commandline
         }
 
         /**
-         * @return The parts.
+         * @return the parts
          */
         private String[] getParts()
         {

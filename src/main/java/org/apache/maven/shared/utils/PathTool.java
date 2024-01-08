@@ -26,15 +26,27 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Path tool contains static methods to assist in determining path-related
- * information such as relative paths.
- * <p/>
+ * <p>Path tool contains static methods to assist in determining path-related
+ * information such as relative paths.</p>
+ * <p>
  * This class originally got developed at Apache Anakia and later maintained
  * in maven-utils of Apache Maven-1.
  * Some external fixes by Apache Committers have been applied later.
+ * </p>
  */
 public class PathTool
 {
+    
+    /**
+     * The constructor.
+     *
+     * @deprecated This is a utility class with only static methods. Don't create instances of it.
+     */
+    @Deprecated
+    public PathTool()
+    {
+    }    
+    
     /**
      * Determines the relative path of a filename from a base directory.
      * This method is useful in building relative links within pages of
@@ -44,9 +56,9 @@ public class PathTool
      * file separators.  The relative path returned is formed using
      * forward slashes as it is expected this path is to be used as a
      * link in a web page (again mimicking Anakia's behavior).
-     * <p/>
+     * <p>
      * This method is thread-safe.
-     * <br/>
+     * </p>
      * <pre>
      * PathTool.getRelativePath( null, null )                                   = ""
      * PathTool.getRelativePath( null, "/usr/local/java/bin" )                  = ""
@@ -100,8 +112,7 @@ public class PathTool
     }
 
     /**
-     * This method can calculate the relative path between two pathes on a file system.
-     * <br/>
+     * <p>This method can calculate the relative path between two paths on a file system.</p>
      * <pre>
      * PathTool.getRelativeFilePath( null, null )                                   = ""
      * PathTool.getRelativeFilePath( null, "/usr/local/java/bin" )                  = ""

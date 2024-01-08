@@ -27,7 +27,9 @@ import javax.annotation.Nonnull;
  * A list of patterns to be matched
  *
  * @author Kristian Rosenvold
+ * @deprecated use {@code java.nio.filejava.nio.file.DirectoryStream.Filter<T>} and related classes
  */
+@Deprecated
 public class MatchPatterns
 {
     private final MatchPattern[] patterns;
@@ -38,9 +40,8 @@ public class MatchPatterns
     }
 
     /**
-     * Checks these MatchPatterns against a specified string.
-     * <p/>
-     * Uses far less string tokenization than any of the alternatives.
+     * <p>Checks these MatchPatterns against a specified string.</p>
+     * <p>Uses far less string tokenization than any of the alternatives.</p>
      *
      * @param name            The name to look for
      * @param isCaseSensitive If the comparison is case sensitive

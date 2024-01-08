@@ -19,22 +19,31 @@ package org.apache.maven.shared.utils.cli;
  * under the License.
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+
 import org.apache.maven.shared.utils.Os;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 public class CommandLineUtilsTest
-    extends TestCase
 {
 
     /**
      * Tests that case-insensitive environment variables are normalized to upper case.
      */
+    @Test
     public void testGetSystemEnvVarsCaseInsensitive()
     {
         Properties vars = CommandLineUtils.getSystemEnvVars( false );
@@ -45,6 +54,7 @@ public class CommandLineUtilsTest
         }
     }
 
+    @Test
     public void testEnsureCaseSensitivity()
         throws Exception
     {
@@ -57,6 +67,7 @@ public class CommandLineUtilsTest
     /**
      * Tests that environment variables on Windows are normalized to upper case. Does nothing on Unix platforms.
      */
+    @Test
     public void testGetSystemEnvVarsWindows()
         throws Exception
     {
@@ -75,6 +86,7 @@ public class CommandLineUtilsTest
     /**
      * Tests the splitting of a command line into distinct arguments.
      */
+    @Test
     public void testTranslateCommandline()
         throws Exception
     {
@@ -91,13 +103,108 @@ public class CommandLineUtilsTest
         assertCmdLineArgs( new String[] { "foo", " ' ", "bar" }, "foo \" ' \" bar" );
     }
 
-    private void assertCmdLineArgs( String[] expected, String cmdLine )
+
+    @Test
+    public void givenASingleQuoteMarkInArgument_whenExecutingCode_thenNoExceptionIsThrown() throws Exception {
+        new Commandline("echo \"let's go\"").execute();
+    }
+
+    @Test
+    public void givenADoubleQuoteMarkInArgument_whenExecutingCode_thenCommandLineExceptionIsThrown() throws Exception {
+        try {
+            new Commandline("echo \"let\"s go\"").execute();
+        } catch (CommandLineException e) {
+            assertTrue(true);
+            return;
+        }
+        fail("Exception was not thrown when given invalid (3 unescaped double quote) input");
+    }
+
+
+    @Test
+    public void givenASingleQuoteMarkInArgument_whenExecutingCode_thenExitCode0Returned() throws Exception {
+        final Process p = new Commandline("echo \"let's go\"").execute();
+        // Note, this sleep should be removed when java version reaches Java 8
+        Thread.sleep(1000);
+        assertEquals(0, p.exitValue());
+    }
+
+    @Test
+    public void givenASingleQuoteMarkInArgument_whenTranslatingToCmdLineArgs_thenTheQuotationMarkIsNotEscaped()
+        throws Exception
+    {
+        final String command = "echo \"let's go\"";
+        final String[] expected = new String[] { "echo", "let's go" };
+        assertCmdLineArgs( expected, command );
+    }
+
+    @Test
+    public void givenAnEscapedDoubleQuoteMarkInArgument_whenTranslatingToCmdLineArgs_thenTheQuotationMarkRemainsEscaped()
+        throws Exception
+    {
+        final String command = "echo \"let\\\"s go\"";
+        final String[] expected = new String[] { "echo", "let\\\"s go" };
+        assertCmdLineArgs( expected, command );
+    }
+
+    @Test
+    public void givenAnEscapedSingleQuoteMarkInArgument_whenTranslatingToCmdLineArgs_thenTheQuotationMarkRemainsEscaped()
+        throws Exception
+    {
+        final String command = "echo \"let\\'s go\"";
+        final String[] expected = new String[] { "echo", "let\\'s go"};
+        assertCmdLineArgs( expected, command );
+    }
+
+    @Test
+    public void givenAnEscapedDoubleQuoteMarkInArgument_whenTranslatingToCmdLineArgs_thenNoExceptionIsThrown()
+        throws Exception
+    {
+        new Commandline( "echo \"let\\\"s go\"" ).execute();
+    }
+
+    private void assertCmdLineArgs( final String[] expected, final String cmdLine )
         throws Exception
     {
         String[] actual = CommandLineUtils.translateCommandline( cmdLine );
         assertNotNull( actual );
         assertEquals( expected.length, actual.length );
         assertEquals( Arrays.asList( expected ), Arrays.asList( actual ) );
+    }
+
+    @Test
+    public void environmentVariableWithNullShouldNotBeSet() {
+
+        Commandline commandline = new Commandline();
+        commandline.addEnvironment("TEST_NULL_ENV", null);
+
+        String[] environmentVariables = commandline.getEnvironmentVariables();
+
+        assertNotNull( environmentVariables );
+        assertThat( environmentVariables, not( hasItemInArray( "TEST_NULL_ENV=null" ) ) );
+    }
+
+    @Test
+    public void environmentVariableFromSystemIsCopied() {
+
+        Commandline commandline = new Commandline();
+
+        String[] environmentVariables = commandline.getEnvironmentVariables();
+
+        assertNotNull(environmentVariables);
+        assertThat(environmentVariables, hasItemInArray( "TEST_SHARED_ENV=TestValue" ) );
+    }
+
+    @Test
+    public void environmentVariableFromSystemIsRemoved() {
+
+        Commandline commandline = new Commandline();
+        commandline.addEnvironment("TEST_SHARED_ENV", null);
+
+        String[] environmentVariables = commandline.getEnvironmentVariables();
+
+        assertNotNull(environmentVariables);
+        assertThat(environmentVariables, not ( hasItemInArray( "TEST_SHARED_ENV=TestValue" ) ) );
     }
 
 }

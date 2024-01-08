@@ -21,6 +21,7 @@ package org.apache.maven.shared.utils.logging;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
+import org.fusesource.jansi.AnsiMode;
 
 /**
  * Colored message utils, to manage colors consistently across plugins (only if Maven version is at least 3.5.0).
@@ -45,7 +46,7 @@ public class MessageUtils
         boolean jansi = true;
         try
         {
-            // JAnsi is provided by Maven core since 3.5.0
+            // Jansi is provided by Maven core since 3.5.0
             Class.forName( "org.fusesource.jansi.Ansi" );
         }
         catch ( ClassNotFoundException cnfe )
@@ -78,20 +79,16 @@ public class MessageUtils
         {
             doSystemUninstall();
 
-            // hook can only set when JANSI is true 
+            // hook can only set when Jansi is true
             if ( shutdownHook != null )
             {
-                // if out and system_out are same instance again, ansi is assumed to be uninstalled 
-                if ( AnsiConsole.out == AnsiConsole.system_out )
+                try
                 {
-                    try
-                    {
-                        Runtime.getRuntime().removeShutdownHook( shutdownHook );
-                    }
-                    catch ( IllegalStateException ex )
-                    {
-                        // ignore - VM is already shutting down
-                    }
+                    Runtime.getRuntime().removeShutdownHook( shutdownHook );
+                }
+                catch ( IllegalStateException ex )
+                {
+                    // ignore - VM is already shutting down
                 }
             }
         }
@@ -106,19 +103,32 @@ public class MessageUtils
     }
 
     /**
-     * Enables message color (if JAnsi is available).
-     * @param flag
+     * Enables message color (if Jansi is available).
+     * @param flag to enable Jansi
      */
     public static void setColorEnabled( boolean flag )
     {
         if ( JANSI )
         {
+            AnsiConsole.out().setMode( flag ? AnsiMode.Force : AnsiMode.Strip );
             Ansi.setEnabled( flag );
+            System.setProperty( AnsiConsole.JANSI_MODE,
+                    flag ? AnsiConsole.JANSI_MODE_FORCE : AnsiConsole.JANSI_MODE_STRIP );
+            boolean installed = AnsiConsole.isInstalled();
+            while ( AnsiConsole.isInstalled() )
+            {
+                AnsiConsole.systemUninstall();
+            }
+            if ( installed )
+            {
+                AnsiConsole.systemInstall();
+            }
         }
     }
 
     /**
-     * Is message color enabled: requires JAnsi available (through Maven) and the color has not been disabled.
+     * Is message color enabled: requires Jansi available (through Maven) and the color has not been disabled.
+     * @return whether colored messages are enabled
      */
     public static boolean isColorEnabled()
     {
@@ -136,6 +146,7 @@ public class MessageUtils
 
     /**
      * Create a message buffer with defined String builder.
+     * @param builder initial content of the message buffer
      * @return a new buffer
      */
     public static MessageBuilder buffer( StringBuilder builder )
@@ -145,6 +156,7 @@ public class MessageUtils
 
     /**
      * Create a message buffer with an internal buffer of defined size.
+     * @param size size of the buffer
      * @return a new buffer
      */
     public static MessageBuilder buffer( int size )
@@ -194,11 +206,32 @@ public class MessageUtils
                 {
                     synchronized ( STARTUP_SHUTDOWN_MONITOR )
                     {
-                        doSystemUninstall();
+                        while ( AnsiConsole.isInstalled() )
+                        {
+                            doSystemUninstall();
+                        }
                     }
                 }
             };
             Runtime.getRuntime().addShutdownHook( shutdownHook );
+        }
+    }
+
+    /**
+     * Get the terminal width or -1 if the width cannot be determined.
+     *
+     * @return the terminal width
+     */
+    public static int getTerminalWidth()
+    {
+        if ( JANSI )
+        {
+            int width = AnsiConsole.getTerminalWidth();
+            return width > 0 ? width : -1;
+        }
+        else
+        {
+            return -1;
         }
     }
 }

@@ -33,7 +33,7 @@ import java.util.Map;
  * @author <a href="mailto:bob@werken.com">Bob McWhirter</a>
  * @author <a href="mailto:szegedia@freemail.hu">Attila Szegedi</a>
  * @author <a href="mailto:geirm@optonline.net">Geir Magnusson Jr.</a>
- * @version $Id$
+ *
  */
 public class ClassMap
 {
@@ -79,16 +79,13 @@ public class ClassMap
     }
 
     /**
-     * Find a Method using the methodKey
-     * provided.
-     * <p/>
-     * Look in the methodMap for an entry.  If found,
+     * <p>Find a Method using the methodKey provided.</p>
+     * <p>Look in the methodMap for an entry. If found,
      * it'll either be a CACHE_MISS, in which case we
      * simply give up, or it'll be a Method, in which
-     * case, we return it.
-     * <p/>
-     * If nothing is found, then we must actually go
-     * and introspect the method from the MethodMap.
+     * case, we return it.</p>
+     * <p>If nothing is found, then we must actually go
+     * and introspect the method from the MethodMap.</p>
      * @param name Method name.
      * @param params Method parameters.
      * @return The found method.

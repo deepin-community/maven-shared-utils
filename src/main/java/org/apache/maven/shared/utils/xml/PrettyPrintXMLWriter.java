@@ -23,14 +23,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import org.apache.maven.shared.utils.Os;
 
 /**
- * XMLWriter with nice indentation
- */
-/**
+ * XMLWriter with nice indentation.
+ * 
  * @author kama
- *
  */
 public class PrettyPrintXMLWriter
     implements XMLWriter
@@ -63,7 +60,7 @@ public class PrettyPrintXMLWriter
 
     /**
      * @param writer not null
-     * @param lineIndent could be null, but the normal way is some spaces.
+     * @param lineIndent can be null, but the normal way is some spaces
      */
     public PrettyPrintXMLWriter( PrintWriter writer, String lineIndent )
     {
@@ -72,7 +69,7 @@ public class PrettyPrintXMLWriter
 
     /**
      * @param writer not null
-     * @param lineIndent could be null, but the normal way is some spaces.
+     * @param lineIndent can be null, but the normal way is some spaces.
      */
     public PrettyPrintXMLWriter( Writer writer, String lineIndent )
     {
@@ -97,20 +94,20 @@ public class PrettyPrintXMLWriter
 
     /**
      * @param writer not null
-     * @param lineIndent could be null, but the normal way is some spaces.
-     * @param encoding could be null or invalid.
-     * @param doctype could be null.
+     * @param lineIndent can be null, but the normal way is some spaces
+     * @param encoding can be null or invalid
+     * @param doctype can be null
      */
     public PrettyPrintXMLWriter( PrintWriter writer, String lineIndent, String encoding, String doctype )
     {
-        this( writer, lineIndent.toCharArray(), Os.LINE_SEP.toCharArray(), encoding, doctype );
+        this( writer, lineIndent.toCharArray(), "\n".toCharArray(), encoding, doctype );
     }
 
     /**
      * @param writer not null
-     * @param lineIndent could be null, but the normal way is some spaces.
-     * @param encoding could be null or invalid.
-     * @param doctype could be null.
+     * @param lineIndent can be null, but the normal way is some spaces
+     * @param encoding can be null or invalid
+     * @param doctype can be null
      */
     public PrettyPrintXMLWriter( Writer writer, String lineIndent, String encoding, String doctype )
     {
@@ -119,18 +116,18 @@ public class PrettyPrintXMLWriter
 
     /**
      * @param writer not null
-     * @param encoding could be null or invalid.
-     * @param doctype could be null.
+     * @param encoding can be null or invalid
+     * @param doctype can be null
      */
     public PrettyPrintXMLWriter( PrintWriter writer, String encoding, String doctype )
     {
-        this( writer, DEFAULT_LINE_INDENT, Os.LINE_SEP.toCharArray(), encoding, doctype );
+        this( writer, DEFAULT_LINE_INDENT, "\n".toCharArray(), encoding, doctype );
     }
 
     /**
      * @param writer not null
-     * @param encoding could be null or invalid.
-     * @param doctype could be null.
+     * @param encoding can be null or invalid
+     * @param doctype can be null
      */
     public PrettyPrintXMLWriter( Writer writer, String encoding, String doctype )
     {
@@ -139,10 +136,10 @@ public class PrettyPrintXMLWriter
 
     /**
      * @param writer not null
-     * @param lineIndent could be null, but the normal way is some spaces.
-     * @param lineSeparator could be null, but the normal way is valid line separator
-     * @param encoding could be null or the encoding to use.
-     * @param doctype could be null.
+     * @param lineIndent can be null, but the normal way is some spaces.
+     * @param lineSeparator can be null, but the normal way is valid line separator
+     * @param encoding can be null or the encoding to use.
+     * @param doctype can be null
      */
     public PrettyPrintXMLWriter( PrintWriter writer, String lineIndent, String lineSeparator, String encoding,
                                  String doctype )
@@ -152,10 +149,10 @@ public class PrettyPrintXMLWriter
 
     /**
      * @param writer        not null
-     * @param lineIndent    could be null, but the normal way is some spaces.
-     * @param lineSeparator could be null, but the normal way is valid line separator
-     * @param encoding      could be null or the encoding to use.
-     * @param doctype       could be null.
+     * @param lineIndent    can be null, but the normal way is some spaces
+     * @param lineSeparator can be null, but the normal way is valid line separator
+     * @param encoding      can be null or the encoding to use
+     * @param doctype       can be null
      */
     private PrettyPrintXMLWriter( PrintWriter writer, char[] lineIndent, char[] lineSeparator, String encoding,
                                   String doctype )
@@ -214,7 +211,7 @@ public class PrettyPrintXMLWriter
     }
 
     /**
-     * @param lineSeparator The line separator to be used.
+     * @param lineSeparator the line separator to be output
      */
     public void setLineSeparator( String lineSeparator )
     {
@@ -227,7 +224,7 @@ public class PrettyPrintXMLWriter
     }
 
     /**
-     * @param lineIndentParameter The line indent parameter.
+     * @param lineIndentParameter the line indent parameter
      */
     public void setLineIndenter( String lineIndentParameter )
     {
@@ -242,6 +239,12 @@ public class PrettyPrintXMLWriter
     /** {@inheritDoc} */
     public void startElement( String elementName ) throws IOException
     {
+        
+        if ( elementName.isEmpty() )
+        {
+            throw new IllegalArgumentException( "Element name cannot be empty" );
+        }
+        
         boolean firstLine = ensureDocumentStarted();
 
         completePreviouslyOpenedElement();
@@ -328,7 +331,7 @@ public class PrettyPrintXMLWriter
     }
 
     /**
-     * Write the documents if not already done.
+     * Write the document if not already done.
      *
      * @return <code>true</code> if the document headers have freshly been written.
      */
@@ -366,10 +369,10 @@ public class PrettyPrintXMLWriter
 
         if ( docType != null )
         {
-            newLine();
             writer.write( "<!DOCTYPE " );
             writer.write( docType );
             writer.write( '>' );
+            newLine();
         }
     }
 
