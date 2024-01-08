@@ -1,3 +1,17 @@
+maven-shared-utils (3.3.4-1) unstable; urgency=high
+
+  * Team upload.
+  * New upstream version 3.3.4.
+    - Fix CVE-2022-29599: Apache Maven maven-shared-utils prior to version
+      3.3.3, the Commandline class can emit double-quoted strings without
+      proper escaping, allowing shell injection attacks. (Closes: #1012314)
+  * Switch to debhelper-compat = 13.
+  * Declare compliance with Debian Policy 4.6.1.
+  * Drop 01-backward-compatibility.patch.
+  * Build-depend on libcommons-text-java.
+
+ -- Markus Koschany <apo@debian.org>  Wed, 22 Jun 2022 16:48:11 +0200
+
 maven-shared-utils (3.3.0-1) unstable; urgency=medium
 
   * Team upload.

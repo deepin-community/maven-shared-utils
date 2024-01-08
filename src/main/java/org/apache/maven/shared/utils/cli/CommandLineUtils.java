@@ -36,7 +36,6 @@ import org.apache.maven.shared.utils.StringUtils;
 
 /**
  * @author <a href="mailto:trygvis@inamo.no">Trygve Laugst&oslash;l </a>
- * @version $Id$
  */
 public abstract class CommandLineUtils
 {
@@ -277,13 +276,16 @@ public abstract class CommandLineUtils
                     if ( systemIn != null )
                     {
                         inputFeeder = new StreamFeeder( systemIn, p.getOutputStream() );
+                        inputFeeder.setName( "StreamFeeder-systemIn" );
                         inputFeeder.start();
                     }
 
                     outputPumper = new StreamPumper( p.getInputStream(), systemOut );
+                    outputPumper.setName( "StreamPumper-systemOut" );
                     outputPumper.start();
 
                     errorPumper = new StreamPumper( p.getErrorStream(), systemErr );
+                    errorPumper.setName( "StreamPumper-systemErr" );
                     errorPumper.start();
 
                     int returnValue;
@@ -419,9 +421,9 @@ public abstract class CommandLineUtils
      * with case-insensitive environment variables like Windows, all variable names will be normalized to upper case.
      *
      * @return The shell environment variables, can be empty but never <code>null</code>.
-     * @see System#getenv() System.getenv() API, new in JDK 5.0, to get the same result
-     *      <b>since 2.0.2 System#getenv() will be used if available in the current running jvm.</b>
+     * @deprecated use System#getenv()
      */
+    @Deprecated
     public static Properties getSystemEnvVars()
     {
         return getSystemEnvVars( !Os.isFamily( Os.FAMILY_WINDOWS ) );
@@ -433,9 +435,9 @@ public abstract class CommandLineUtils
      *
      * @param caseSensitive Whether environment variable keys should be treated case-sensitively.
      * @return Properties object of (possibly modified) envar keys mapped to their values.
-     * @see System#getenv() System.getenv() API, new in JDK 5.0, to get the same result
-     *      <b>since 2.0.2 System#getenv() will be used if available in the current running jvm.</b>
+     * @deprecated use System#getenv()
      */
+    @Deprecated
     public static Properties getSystemEnvVars( boolean caseSensitive )
     {
         Map<String, String> envs = System.getenv();
@@ -477,8 +479,9 @@ public abstract class CommandLineUtils
         final int normal = 0;
         final int inQuote = 1;
         final int inDoubleQuote = 2;
+        boolean inEscape = false;
         int state = normal;
-        StringTokenizer tok = new StringTokenizer( toProcess, "\"\' ", true );
+        final StringTokenizer tok = new StringTokenizer( toProcess, "\"\' \\", true );
         List<String> tokens = new ArrayList<String>();
         StringBuilder current = new StringBuilder();
 
@@ -490,31 +493,65 @@ public abstract class CommandLineUtils
                 case inQuote:
                     if ( "\'".equals( nextTok ) )
                     {
-                        state = normal;
+                        if ( inEscape )
+                        {
+                            current.append( nextTok );
+                            inEscape = false;
+                        }
+                        else
+                        {
+                            state = normal;
+                        }
                     }
                     else
                     {
                         current.append( nextTok );
+                        inEscape = "\\".equals( nextTok );
                     }
                     break;
                 case inDoubleQuote:
                     if ( "\"".equals( nextTok ) )
                     {
-                        state = normal;
+                        if ( inEscape )
+                        {
+                            current.append( nextTok );
+                            inEscape = false;
+                        }
+                        else
+                        {
+                            state = normal;
+                        }
                     }
                     else
                     {
                         current.append( nextTok );
+                        inEscape = "\\".equals( nextTok );
                     }
                     break;
                 default:
                     if ( "\'".equals( nextTok ) )
                     {
-                        state = inQuote;
+                        if ( inEscape )
+                        {
+                            inEscape = false;
+                            current.append( nextTok );
+                        }
+                        else
+                        {
+                            state = inQuote;
+                        }
                     }
                     else if ( "\"".equals( nextTok ) )
                     {
-                        state = inDoubleQuote;
+                        if ( inEscape )
+                        {
+                            inEscape = false;
+                            current.append( nextTok );
+                        }
+                        else
+                            {
+                            state = inDoubleQuote;
+                        }
                     }
                     else if ( " ".equals( nextTok ) )
                     {
@@ -527,6 +564,7 @@ public abstract class CommandLineUtils
                     else
                     {
                         current.append( nextTok );
+                        inEscape = "\\".equals( nextTok );
                     }
                     break;
             }
@@ -546,8 +584,8 @@ public abstract class CommandLineUtils
     }
 
     /**
-     * @param line The line
-     * @return The concatenate lines.
+     * @param line the lines
+     * @return the concatenated lines, quoted and escaped, separated by spaces
      */
     public static String toString( String... line )
     {
@@ -557,7 +595,6 @@ public abstract class CommandLineUtils
             return "";
         }
 
-        // path containing one or more elements
         final StringBuilder result = new StringBuilder();
         for ( int i = 0; i < line.length; i++ )
         {
@@ -565,14 +602,7 @@ public abstract class CommandLineUtils
             {
                 result.append( ' ' );
             }
-            try
-            {
-                result.append( StringUtils.quoteAndEscape( line[i], '\"' ) );
-            }
-            catch ( Exception e )
-            {
-                System.err.println( "Error quoting argument: " + e.getMessage() );
-            }
+            result.append( StringUtils.quoteAndEscape( line[i], '\"' ) );
         }
         return result.toString();
     }
